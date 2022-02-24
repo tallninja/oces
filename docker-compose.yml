@@ -1,6 +1,17 @@
 version: '3'
 services:
-  server:
+  nginx:
+    restart: always
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile.dev
+    ports:
+      - 7000:80
+
+  redis:
+    image: redis:latest
+
+  api:
     build:
       dockerfile: Dockerfile.dev
       context: ./server
@@ -9,6 +20,11 @@ services:
       - ./server:/app
     ports:
       - 5000:5000
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
 
   worker:
     privileged: true

@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const routes = require('@routes');
 
 class App {
   constructor() {
@@ -23,6 +24,7 @@ class App {
     app.get('/', (req, res) => {
       res.status(200).json({ message: 'Connected to server !' });
     });
+    app.use('/api', routes);
     app.listen(port, (err) => {
       if (err) console.error('Error', err);
       else console.log(`Server listening on PORT: ${port}`);

@@ -11,12 +11,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.26.0",
     "cors": "^2.8.5",
     "express": "^4.17.3",
     "joi": "^17.6.0",
+    "md5": "^2.3.0",
     "module-alias": "^2.2.2",
     "mongoose": "^6.2.3",
     "morgan": "^1.10.0",
+    "redis": "^4.0.4",
     "socket.io": "^4.4.1"
   },
   "devDependencies": {
@@ -25,6 +28,7 @@
   },
   "_moduleAliases": {
     "@root": ".",
-    "@src": "src/"
+    "@src": "src/",
+    "@routes": "src/routes/"
   }
 }
