@@ -110,7 +110,7 @@ class IsolateJob:
 
         self.compile_output = File.read_bytes(file=self.compile_output_file)
 
-        return True if compile_command.returncode == 0 else False
+        return compile_command.returncode == 0
 
     def run_code(self):
         run_cmd = f'isolate --cg -s -b {self.box_id} \
