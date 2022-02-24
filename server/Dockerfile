@@ -1,4 +1,4 @@
-FROM ernestwambua/oces-compilers:latest
+FROM node:alpine3.15
 
 WORKDIR /app
 
