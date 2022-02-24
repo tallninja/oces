@@ -4,8 +4,6 @@ ENV VIRTUAL_ENV=/opt/env
 
 ENV FLASK_APP routes.py
 
-ENV FLASK_ENV=development
-
 WORKDIR /app
 
 COPY ./requirements.txt .
@@ -20,4 +18,4 @@ COPY ./ ./
 
 EXPOSE 8000
 
-ENTRYPOINT $VIRTUAL_ENV/bin/python3 -m flask run --host=0.0.0.0 --port=8000
+ENTRYPOINT $VIRTUAL_ENV/bin/python3 -m uvicorn main:app --reload --host=0.0.0.0

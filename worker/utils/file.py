@@ -28,3 +28,7 @@ class File:
     def write_bytes(file, data):
         with open(file, 'wb') as file:
             file.write(bytes(data, encoding='utf-8'))
+
+    @staticmethod
+    def is_empty(file):
+        return os.stat(file).st_size == 0
