@@ -100,8 +100,9 @@ class IsolateJob:
                         { "--mem=" if ENABLE_PER_PROCESS_AND_THREAD_MEMORY_LIMIT else "--cg-mem=" }{MEMORY_LIMIT} \
                         --fsize={MAX_FILE_SIZE} \
                         --stderr-to-stdout \
-                        --stdout=compile.txt\
-                        -E PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+                        --stdout=compile.txt \
+                        -E PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/cargo/bin \
+                        -E CARGO_HOME -E RUSTUP_HOME \
                         --run -- /bin/bash compile'
 
         print(f'{date.today()} Compiling code')
@@ -128,7 +129,9 @@ class IsolateJob:
                     --stdin=stdin.txt \
                     --stdout=stdout.txt \
                     --stderr=stderr.txt \
-                    -E PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+                    -E PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/cargo/bin \
+                    -E PATH -E CARGO_HOME -E RUSTUP_HOME \
+                    -d /etc:noexec \
                     --run -- /bin/bash run'
         subprocess.run(run_cmd.split())
         return {
