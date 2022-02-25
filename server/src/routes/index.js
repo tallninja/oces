@@ -17,11 +17,17 @@ router.get('/', (req, res) => {
 });
 
 const cache = async (req, res, next) => {
-  const submission = JSON.stringify(req.body);
-  const submission_output = await client.get(md5(submission));
+  const submission = req.body;
+  const submission_output = await client.get(
+    md5(JSON.stringify({ code: submission.code, stdin: submission.stdin }))
+  );
   if (submission_output !== null) {
     console.log('Fetched from cache...');
-    res.status(200).json(JSON.parse(submission_output));
+    res
+      .status(200)
+      .json({
+        submission: { ...submission, output: JSON.parse(submission_output) },
+      });
   } else {
     next();
   }
@@ -30,13 +36,13 @@ const cache = async (req, res, next) => {
 const runCode = async (req, res) => {
   const submission = req.body;
   const response = await axios.post('http://nginx/worker/run', submission);
-  const output = response.data;
+  const response_data = response.data;
   await client.setEx(
-    md5(JSON.stringify(submission)),
+    md5(JSON.stringify({ code: submission.code, stdin: submission.stdin })),
     3600,
-    JSON.stringify(output)
+    JSON.stringify(response_data.submission.output)
   );
-  res.status(200).json(output);
+  res.status(200).json(response_data);
 };
 
 router.post('/run', cache, runCode);

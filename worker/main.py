@@ -6,7 +6,6 @@ from fastapi import FastAPI, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from models.models import Submission
 from jobs.isolate import IsolateJob
-from utils.cache import Cache
 
 
 app = FastAPI()
@@ -29,9 +28,8 @@ def index(response: Response):
 
 @app.post('/run')
 async def run_code(submission: Submission, response: Response):
-    box_id = 10
-    json_str = json.dumps(submission.__dict__)
-    key = hashlib.md5(json_str.encode()).hexdigest()
+    key_str = json.dumps({'code': submission.code, 'stdin': submission.stdin})
+    key = hashlib.md5(key_str.encode()).hexdigest()
     output = await redis.get(key)
     if output:
         print(f'{date.today()} Fetched from cache... !')
@@ -41,5 +39,7 @@ async def run_code(submission: Submission, response: Response):
             submission=submission), indent=4)
         await redis.set(name=key, value=output, ex=3600)
 
+    submission.output = json.loads(output)
+
     response.status_code = status.HTTP_200_OK
-    return {'output': json.loads(output)}
+    return {'submission': submission}
