@@ -1,20 +1,11 @@
-FROM buildpack-deps:focal
+FROM buildpack-deps:buster
 
-# update apt repository
-RUN apt-get update
+# C, C++, Fortran
+RUN set -eux && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends gcc g++ gfortran
 
-# C
-RUN apt-get install -y gcc
-
-# C++
-RUN apt-get install -y g++
-
-# Fortran
-RUN apt-get install -y gfortran
-
-# Check for latest version here: https://nodejs.org/en
 ENV NODE_VERSION 17.5.0
-
 # Node.js and npm
 RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
     && case "${dpkgArch##*-}" in \
@@ -58,7 +49,7 @@ RUN set -xe && \
 
 # isolate - create sandbox in order to run untrusted user programs
 RUN set -xe && \
-    apt-get install -y --no-install-recommends git libcap-dev && \
+    apt-get install -y --no-install-recommends git libcap-dev vim && \
     rm -rf /var/lib/apt/lists/* && \
     git clone https://github.com/tallninja/isolate.git /tmp/isolate && \
     cd /tmp/isolate && \

@@ -1,4 +1,4 @@
-FROM ernestwambua/oces-compilers:focal
+FROM ernestwambua/oces-compilers:latest
 
 ARG USERNAME=oces
 ARG USER_UID=1000

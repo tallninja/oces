@@ -32,8 +32,8 @@ services:
       dockerfile: Dockerfile.dev
       context: ./worker
     volumes:
-      - /app/env
-      - ./worker:/app
+      - /home/oces/app/env
+      - ./worker:/home/oces/app
     ports:
       - 8000:8000
       

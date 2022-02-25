@@ -29,7 +29,7 @@ def index(response: Response):
 
 @app.post('/run')
 async def run_code(submission: Submission, response: Response):
-    box_id = 100
+    box_id = 10
     json_str = json.dumps(submission.__dict__)
     key = hashlib.md5(json_str.encode()).hexdigest()
     output = await redis.get(key)
@@ -38,7 +38,7 @@ async def run_code(submission: Submission, response: Response):
     else:
         print(f'{date.today()} Performing Job...')
         output = json.dumps(IsolateJob.perform(
-            box_id=box_id, submission=submission), indent=4)
+            submission=submission), indent=4)
         await redis.set(name=key, value=output, ex=3600)
 
     response.status_code = status.HTTP_200_OK

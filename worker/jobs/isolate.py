@@ -24,12 +24,12 @@ from jobs.config import (
 
 
 class IsolateJob:
-    def __init__(self, box_id, workdir, language,  code,  stdin):
+    def __init__(self, workdir, submission: Submission):
         self.language = next(
-            (lang for lang in languages if lang['name'] == language), None)
-        self.code = code
-        self.stdin = stdin
-        self.box_id = box_id
+            (lang for lang in languages if lang['name'] == submission.language), None)
+        self.code = submission.code
+        self.stdin = submission.stdin or ''
+        self.box_id = submission.id % 2147483647
         self.workdir = workdir
         self.boxdir = f'{self.workdir}/box'
         self.tmpdir = f'{self.workdir}/tmp'
@@ -44,15 +44,15 @@ class IsolateJob:
         self.run_script = f'{self.boxdir}/run'
 
     @staticmethod
-    def perform(box_id, submission: Submission):
+    def perform(submission: Submission):
         success = True
         failure = False
-        language = submission.language
-        code = submission.code
-        stdin = submission.stdin or ''
-        workdir = IsolateJob.create_sandbox(box_id=box_id)
-        job = IsolateJob(box_id=box_id, workdir=workdir,
-                         language=language, code=code, stdin=stdin)
+        workdir = IsolateJob.create_sandbox(box_id=submission.id % 2147483647)
+        print(workdir)
+        job = IsolateJob(
+            workdir=workdir,
+            submission=submission
+        )
         job.create_source_file()
         job.create_stdid_file()
         job.create_compile_script()
@@ -107,9 +107,9 @@ class IsolateJob:
         print(f'{date.today()} Compiling code')
         compile_command = subprocess.run(
             compile_cmd.split(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
         self.compile_output = File.read_bytes(file=self.compile_output_file)
-
+        cleanup_cmd = f'rm -rf {self.compile_output_file}'
+        subprocess.run(cleanup_cmd.split())
         return compile_command.returncode == 0
 
     def run_code(self):
