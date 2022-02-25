@@ -1,17 +1,35 @@
 FROM ernestwambua/oces-compilers:focal
 
-WORKDIR /app
-
-ENV FLASK_APP routes.py
-
-COPY ./requirements.txt ./requirements.txt
+ARG USERNAME=oces
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
 
 RUN set -xe && \
-    python3 -m venv env && \
-    . ./env/bin/activate
+    groupadd --gid $USER_GID $USERNAME && \
+    useradd --uid $USER_UID --gid $USER_GID -m $USERNAME && \
+    apt-get update && \
+    apt-get install -y sudo && \
+    echo "$USERNAME ALL=(root) NOPASSWD: ALL" > /etc/sudoers.d/$USERNAME && \
+    chmod 0440 /etc/sudoers.d/$USERNAME
 
-RUN pip3 install -r requirements.txt
+ENV HOME=/home/$USERNAME
+
+ENV VIRTUAL_ENV=/opt/env
+
+WORKDIR $HOME/app
+
+COPY ./requirements.txt .
+
+RUN set -xe && \
+    python3 -m venv $VIRTUAL_ENV && \
+    . $VIRTUAL_ENV/bin/activate
+
+RUN $VIRTUAL_ENV/bin/pip3 install -r requirements.txt
 
 COPY ./ ./
 
-ENTRYPOINT ["python3", "-m", "flask", "run", "--host=0.0.0.0"]
+EXPOSE 8000
+
+USER $USERNAME
+
+ENTRYPOINT $VIRTUAL_ENV/bin/python3 -m uvicorn main:app --reload --host=0.0.0.0
