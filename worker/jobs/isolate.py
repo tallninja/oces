@@ -2,7 +2,7 @@ import sys
 import subprocess
 from datetime import date
 from db.languages import languages
-from models.models import Submission
+from models.submission import Submission
 from utils.file import File
 from jobs.config import (
     ENABLE_NETWORK,
@@ -22,6 +22,14 @@ from jobs.config import (
     MAX_FILE_SIZE
 )
 
+STDIN_FILE_NAME = 'stdin.txt'
+STDOUT_FILE_NAME = 'stdout.txt'
+STDERR_FILE_NAME = 'stderr.txt'
+COMPILE_OUTPUT_FILE_NAME = 'compile_output.txt'
+METADATA_FILE_NAME = 'metadata.txt'
+COMPILE_FILE_NAME = 'compile'
+RUN_FILE_NAME = 'run'
+
 
 class IsolateJob:
     def __init__(self, workdir, submission: Submission):
@@ -34,19 +42,17 @@ class IsolateJob:
         self.boxdir = f'{self.workdir}/box'
         self.tmpdir = f'{self.workdir}/tmp'
         self.source_file = self.boxdir + '/' + self.language.get('source_file')
-        self.stdin_file = f'{self.boxdir}/stdin.txt'
-        self.stdout_file = f'{self.boxdir}/stdout.txt'
-        self.stderr_file = f'{self.boxdir}/stderr.txt'
+        self.stdin_file = f'{self.boxdir}/{STDIN_FILE_NAME}'
+        self.stdout_file = f'{self.boxdir}/{STDOUT_FILE_NAME}'
+        self.stderr_file = f'{self.boxdir}/{STDERR_FILE_NAME}'
         self.compile_output = None
-        self.compile_output_file = f'{self.boxdir}/compile.txt'
-        self.metadata_file = f'{self.boxdir}/metadata.txt'
-        self.compile_script = f'{self.boxdir}/compile'
-        self.run_script = f'{self.boxdir}/run'
+        self.compile_output_file = f'{self.boxdir}/{COMPILE_OUTPUT_FILE_NAME}'
+        self.metadata_file = f'{self.boxdir}/{METADATA_FILE_NAME}'
+        self.compile_script = f'{self.boxdir}/{COMPILE_FILE_NAME}'
+        self.run_script = f'{self.boxdir}/{RUN_FILE_NAME}'
 
     @staticmethod
     def perform(submission: Submission):
-        success = True
-        failure = False
         workdir = IsolateJob.create_sandbox(box_id=submission.id % 2147483647)
         print(workdir)
         job = IsolateJob(
@@ -57,7 +63,7 @@ class IsolateJob:
         job.create_stdid_file()
         job.create_compile_script()
         job.create_run_script()
-        if job.compile_code() == failure:
+        if not job.compile_code():
             job.cleanup()
             return {'compile_output': job.compile_output}
         output = job.run_code()
@@ -100,10 +106,10 @@ class IsolateJob:
                         { "--mem=" if ENABLE_PER_PROCESS_AND_THREAD_MEMORY_LIMIT else "--cg-mem=" }{MEMORY_LIMIT} \
                         --fsize={MAX_FILE_SIZE} \
                         --stderr-to-stdout \
-                        --stdout=compile.txt \
+                        --stdout={COMPILE_OUTPUT_FILE_NAME} \
                         -E PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/cargo/bin \
                         -E CARGO_HOME -E RUSTUP_HOME \
-                        --run -- /bin/bash compile'
+                        --run -- /bin/bash {COMPILE_FILE_NAME}'
 
         print(f'{date.today()} Compiling code')
         compile_command = subprocess.run(
@@ -126,13 +132,13 @@ class IsolateJob:
                     {"--no-cg-timing" if ENABLE_PER_PROCESS_AND_THREAD_TIME_LIMIT else "--cg-timing"} \
                     { "--mem=" if ENABLE_PER_PROCESS_AND_THREAD_MEMORY_LIMIT else "--cg-mem=" }{MEMORY_LIMIT} \
                     --fsize={MAX_FILE_SIZE} \
-                    --stdin=stdin.txt \
-                    --stdout=stdout.txt \
-                    --stderr=stderr.txt \
+                    --stdin={STDIN_FILE_NAME} \
+                    --stdout={STDOUT_FILE_NAME} \
+                    --stderr={STDERR_FILE_NAME} \
                     -E PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/cargo/bin \
                     -E PATH -E CARGO_HOME -E RUSTUP_HOME \
                     -d /etc:noexec \
-                    --run -- /bin/bash run'
+                    --run -- /bin/bash {RUN_FILE_NAME}'
         subprocess.run(run_cmd.split())
         return {
             'stdin': File.read_bytes(file=self.stdin_file),

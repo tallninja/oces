@@ -1,5 +1,6 @@
 from typing import Optional, Dict
 from pydantic import BaseModel
+from models.status import Status
 
 
 class Submission(BaseModel):

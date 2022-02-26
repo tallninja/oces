@@ -4,7 +4,7 @@ import hashlib
 import aioredis
 from fastapi import FastAPI, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from models.models import Submission
+from models.submission import Submission
 from jobs.isolate import IsolateJob
 
 
@@ -28,7 +28,8 @@ def index(response: Response):
 
 @app.post('/run')
 async def run_code(submission: Submission, response: Response):
-    key_str = json.dumps({'code': submission.code, 'stdin': submission.stdin})
+    key_str = json.dumps({'language': submission.language,
+                         'code': submission.code, 'stdin': submission.stdin})
     key = hashlib.md5(key_str.encode()).hexdigest()
     output = await redis.get(key)
     if output:
