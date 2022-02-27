@@ -1,0 +1,27 @@
+version: '3'
+services:
+  nginx:
+    restart: always
+    image: ernestwambua/oces-nginx:latest
+    ports:
+      - 7000:80
+
+  redis:
+    image: redis:latest
+
+  api:
+    image: ernestwambua/oces-server:latest
+    ports:
+      - 5000:5000
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+
+  worker:
+    privileged: true
+    image: ernestwambua/oces-worker:latest
+    ports:
+      - 8000:8000
+      
