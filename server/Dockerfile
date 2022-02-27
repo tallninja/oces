@@ -10,7 +10,6 @@ RUN set -xe && \
     echo "$USERNAME ALL=(root) NOPASSWD: ALL" > /etc/sudoers.d/$USERNAME && \
     chmod 0440 /etc/sudoers.d/$USERNAME
 
-
 WORKDIR $HOME/app
 
 COPY ./package.json .
@@ -23,4 +22,4 @@ EXPOSE 5000
 
 USER $USERNAME
 
-CMD ["npm", "run", "dev"]
+CMD ["npm","start"]

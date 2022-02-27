@@ -6,7 +6,7 @@ ARG USER_GID=$USER_UID
 
 RUN set -xe && \
     groupadd --gid $USER_GID $USERNAME && \
-    useradd --uid $USER_UID --gid $USER_GID -m $USERNAME && \
+    useradd --uid $USER_UID --gid $USER_GID -m -r $USERNAME && \
     apt-get update && \
     apt-get install -y sudo && \
     echo "$USERNAME ALL=(root) NOPASSWD: ALL" > /etc/sudoers.d/$USERNAME && \
@@ -24,7 +24,7 @@ RUN set -xe && \
     python3 -m venv $VIRTUAL_ENV && \
     . $VIRTUAL_ENV/bin/activate
 
-RUN $VIRTUAL_ENV/bin/pip3 install -r requirements.txt
+RUN $VIRTUAL_ENV/bin/pip3 install --no-cache-dir --upgrade -r requirements.txt
 
 COPY ./ ./
 
@@ -32,4 +32,4 @@ EXPOSE 8000
 
 USER $USERNAME
 
-ENTRYPOINT $VIRTUAL_ENV/bin/python3 -m uvicorn main:app --reload --host=0.0.0.0
+ENTRYPOINT $VIRTUAL_ENV/bin/python3 -m uvicorn main:app --host=0.0.0.0
